@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ultimate Battle Game</title>
+
+    <style>
+        body {
+            font-family: "Poppins", sans-serif;
+            background: linear-gradient(135deg, #000428, #004e92);
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+        }
+
+        .game-box {
+            width: 550px;
+            background: rgba(255,255,255,0.08);
+            padding: 30px;
+            border-radius: 25px;
+            box-shadow: 0 0 30px rgba(0,0,0,0.3);
+            backdrop-filter: blur(12px);
+            text-align: center;
+            animation: fadeIn 1s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .player {
+            margin: 25px 0;
+            padding: 20px;
+            background: rgba(255,255,255,0.12);
+            border-radius: 18px;
+            position: relative;
+        }
+
+        .hp-bar {
+            width: 100%;
+            height: 20px;
+            background: #222;
+            border-radius: 20px;
+            overflow: hidden;
+            margin-bottom: 10px;
+            border: 1px solid #444;
+        }
+
+        .hp {
+            height: 100%;
+            width: 100%;
+            background: linear-gradient(90deg, #16ff00, #00c9ff);
+            transition: 0.4s ease-in-out;
+        }
+
+        button {
+            padding: 12px 18px;
+            margin: 6px;
+            font-size: 15px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .eat { background: #2ecc71; color: white; }
+        .attack { background: #e74c3c; color: white; }
+        .special { background: #9b59b6; color: white; }
+
+        button:hover {
+            transform: scale(1.08);
+            box-shadow: 0 0 12px rgba(255,255,255,0.4);
+        }
+
+        #log {
+            margin-top: 20px;
+            background: rgba(255,255,255,0.1);
+            padding: 15px;
+            height: 150px;
+            overflow-y: auto;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.2);
+            font-size: 14px;
+        }
+
+        .hit-effect {
+            animation: hit 0.3s;
+        }
+
+        @keyframes hit {
+            0% { transform: scale(1); }
+            50% { transform: scale(0.93); }
+            100% { transform: scale(1); }
+        }
+
+        .crit-text {
+            position: absolute;
+            top: -10px;
+            right: 10px;
+            color: #ffea00;
+            font-weight: bold;
+            animation: pop 0.7s ease-out;
+        }
+
+        @keyframes pop {
+            0% { opacity: 0; transform: translateY(10px); }
+            50% { opacity: 1; transform: translateY(-10px); }
+            100% { opacity: 0; transform: translateY(-25px); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="game-box">
+        <h2>⚔️ Ultimate Battle Game</h2>
+
+        <div class="player" id="box1">
+            <h3><span id="nama1"></span> 🛡️</h3>
+            <div class="hp-bar"><div id="hp1" class="hp"></div></div>
+            Energi: <span id="energi1"></span>
+            <br><br>
+            <button class="eat" onclick="makan1()">Makan 🍗</button>
+            <button class="attack" onclick="serang1()">Serang 💥</button>
+            <button class="special" onclick="special1()">Skill Khusus ✨</button>
+        </div>
+
+        <div class="player" id="box2">
+            <h3><span id="nama2"></span> ⚔️</h3>
+            <div class="hp-bar"><div id="hp2" class="hp"></div></div>
+            Energi: <span id="energi2"></span>
+            <br><br>
+            <button class="eat" onclick="makan2()">Makan 🍗</button>
+            <button class="attack" onclick="serang2()">Serang 💥</button>
+            <button class="special" onclick="special2()">Skill Khusus ✨</button>
+        </div>
+
+        <div id="log"></div>
+    </div>
+
+    <script>
+        function pemain(nama, energi) {
+            return {
+                nama,
+                energi,
+                makan(porsi) {
+                    this.energi += porsi;
+                    tulisLog(`${this.nama} makan +${porsi} energi 🍗`);
+                },
+                damage(attack) {
+                    this.energi -= attack;
+                    tulisLog(`${this.nama} terkena serangan -${attack} 💥`);
+                }
+            };
+        }
+
+        let pemain1 = pemain("Mas", 100);
+        let pemain2 = pemain("Abang", 100);
+
+        window.onload = updateUI;
+
+        function updateUI() {
+            document.getElementById("nama1").innerText = pemain1.nama;
+            document.getElementById("energi1").innerText = pemain1.energi;
+            document.getElementById("nama2").innerText = pemain2.nama;
+            document.getElementById("energi2").innerText = pemain2.energi;
+            document.getElementById("hp1").style.width = pemain1.energi + "%";
+            document.getElementById("hp2").style.width = pemain2.energi + "%";
+        }
+
+        function tulisLog(teks) {
+            let log = document.getElementById("log");
+            log.innerHTML += teks + "<br>";
+            log.scrollTop = log.scrollHeight;
+        }
+
+        function efekKena(id) {
+            let box = document.getElementById(id);
+            box.classList.add("hit-effect");
+            setTimeout(() => box.classList.remove("hit-effect"), 300);
+        }
+
+        function effectCrit(id) {
+            const crit = document.createElement("div");
+            crit.className = "crit-text";
+            crit.innerText = "CRITICAL!!";
+            document.getElementById(id).appendChild(crit);
+            setTimeout(() => crit.remove(), 700);
+        }
+
+        function makan1() { pemain1.makan(12); updateUI(); }
+        function makan2() { pemain2.makan(12); updateUI(); }
+
+        function serang1() { pemain2.damage(18); efekKena("box2"); updateUI(); }
+        function serang2() { pemain1.damage(18); efekKena("box1"); updateUI(); }
+
+        function special1() {
+            let dmg = Math.floor(Math.random() * 30) + 20;
+            pemain2.damage(dmg);
+            effectCrit("box2");
+            tulisLog(`💥 Skill Khusus Mas menghasilkan damage ${dmg}!`);
+            updateUI();
+        }
+
+        function special2() {
+            let dmg = Math.floor(Math.random() * 30) + 20;
+            pemain1.damage(dmg);
+            effectCrit("box1");
+            tulisLog(`✨ Skill Khusus Abang menghasilkan damage ${dmg}!`);
+            updateUI();
+        }
+    </script>
+
+</body>
+</html>
